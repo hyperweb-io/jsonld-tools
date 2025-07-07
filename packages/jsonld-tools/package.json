@@ -1,9 +1,9 @@
 {
-  "name": "jsonld-tools",
+  "name": "jsonldjs",
   "version": "0.0.1",
   "description": "JSON-LD Tooling",
   "author": "Dan Lynch <pyramation@gmail.com>",
-  "homepage": "https://github.com/hyperweb-io/jsonld-tools",
+  "homepage": "https://github.com/hyperweb-io/jsonldjs",
   "license": "SEE LICENSE IN LICENSE",
   "main": "index.js",
   "module": "esm/index.js",

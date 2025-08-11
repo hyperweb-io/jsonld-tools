@@ -63,7 +63,7 @@ const blogConfig = globalConfig.includeTypes(['Article']);
 
 // Use configurations
 const result = createJsonLdBuilder()
-  .applyConfig(homeConfig)
+  .mergeConfig(homeConfig.getConfig())
   .excludeIds(['runtime:override']) // Runtime overrides
   .build({ prettyPrint: true });
 ```
@@ -122,7 +122,7 @@ const config = createJsonLdConfig()
 Creates a new builder that extends the configuration builder with graph processing capabilities.
 
 ```typescript
-const builder = createJsonLdBuilder().baseGraph(graph).applyConfig(config);
+const builder = createJsonLdBuilder().baseGraph(graph).mergeConfig(config);
 ```
 
 ### Configuration Methods
@@ -148,6 +148,37 @@ All methods are inherited by the builder from the configuration builder:
 - `.clearPropertyFilters()` - Clear both propertyFiltersByIds and propertyFiltersByTypes
 - `.clearSubgraph()` - Clear subgraphRoots
 - `.clearAll()` - Clear entire configuration (except baseGraph)
+
+#### Configuration Merging
+
+- `.mergeConfig(config: JsonLdConfig)` - Merge with another complete configuration
+- `.mergeFilters(filters: JsonLdFilterOptions)` - Merge only the filters part of another configuration
+
+**Available in both config builder and main builder** - These methods work the same way in both classes.
+
+```typescript
+// Config builder usage
+const baseConfig = createJsonLdConfig().includeTypes(['Person']);
+const otherConfig = createJsonLdConfig()
+  .includeTypes(['Organization'])
+  .excludeIds(['test'])
+  .getConfig();
+const merged = baseConfig.mergeConfig(otherConfig);
+// Result: includeTypes: ['Person', 'Organization'], excludeIds: ['test']
+
+// Main builder usage (processes graph immediately)
+const result = createJsonLdBuilder()
+  .baseGraph(graph)
+  .includeTypes(['Person'])
+  .mergeConfig(otherConfig)
+  .build({ prettyPrint: true });
+
+// Merge only filters
+const baseConfig = createJsonLdConfig().includeTypes(['Person']).addEntities([entity]);
+const otherFilters = { includeTypes: ['Organization'], maxEntities: 10 };
+const merged = baseConfig.mergeFilters(otherFilters);
+// Result: includeTypes: ['Person', 'Organization'], maxEntities: 10, additionalEntities preserved
+```
 
 #### Property Filtering
 
@@ -175,7 +206,6 @@ All methods are inherited by the builder from the configuration builder:
 
 #### Builder-Only Methods
 
-- `.applyConfig(config: JsonLdConfig)` - Apply a pre-built configuration
 - `.getCurrentGraph()` - Get the current graph state
 - `.build(options?: BuildOptions)` - Build the final JSON-LD output
 

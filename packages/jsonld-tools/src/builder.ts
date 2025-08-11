@@ -13,7 +13,6 @@ import {
   applyPopulateConfig,
   buildPropertyFilterConfig,
   filterJsonLdGraph,
-  mergeConfigs,
   validateRuntimeConfig,
 } from './builder-utils';
 
@@ -32,15 +31,6 @@ export class JsonLdBuilder extends JsonLdConfigBuilder {
    */
   protected createInstance(config: JsonLdConfig): JsonLdBuilder {
     return new JsonLdBuilder(config);
-  }
-
-  /**
-   * Apply a pre-built configuration (builder-specific method)
-   */
-  applyConfig(config: JsonLdConfig): JsonLdBuilder {
-    const currentConfig = this.getConfig();
-    const mergedConfig = mergeConfigs(currentConfig, config);
-    return new JsonLdBuilder(mergedConfig);
   }
 
   /**
@@ -98,7 +88,7 @@ export class JsonLdBuilder extends JsonLdConfigBuilder {
     const config = this.getConfig();
 
     if (!config.baseGraph) {
-      throw new Error('No base graph provided. Use baseGraph() or applyConfig() with a baseGraph.');
+      throw new Error('No base graph provided. Use baseGraph() or mergeConfig() with a baseGraph.');
     }
 
     // Validate configuration - only check for critical errors that would break processing
@@ -112,9 +102,9 @@ export class JsonLdBuilder extends JsonLdConfigBuilder {
     let propertyFiltersApplied = false;
 
     // Layer 1: Subgraph extraction with property filtering if subgraphRoots are set
-    if (config.subgraphRoots && config.subgraphRoots.length > 0) {
+    if (config.filters?.subgraphRoots && config.filters.subgraphRoots.length > 0) {
       // Extract subgraph with property filtering during traversal
-      graph = extractSubgraphs(graph, config.subgraphRoots, propertyFilters);
+      graph = extractSubgraphs(graph, config.filters.subgraphRoots, propertyFilters);
       propertyFiltersApplied = true; // Property filters were applied during subgraph extraction
     }
 

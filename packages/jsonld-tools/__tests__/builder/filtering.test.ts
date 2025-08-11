@@ -180,7 +180,7 @@ describe('JsonLdBuilder Complex Filtering', () => {
         .filterPropertiesByTypes(['Organization'], { exclude: ['member'] });
 
       const result = createJsonLdBuilder()
-        .applyConfig(extendedConfig.getConfig())
+        .mergeConfig(extendedConfig.getConfig())
         .build({ prettyPrint: false });
 
       const parsed = JSON.parse(result);
@@ -201,7 +201,7 @@ describe('JsonLdBuilder Complex Filtering', () => {
         .getConfig();
 
       const result = createJsonLdBuilder()
-        .applyConfig(config)
+        .mergeConfig(config)
         .excludeTypes(['Article']) // Runtime override
         .maxEntities(2) // Runtime limit
         .build({ prettyPrint: false });

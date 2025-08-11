@@ -81,7 +81,7 @@ describe('Integration: Merging Behavior with Builder', () => {
       .excludeTypes(['Article'])
       .getConfig();
 
-    const result = createJsonLdBuilder().applyConfig(extendedConfig).build({ prettyPrint: false });
+    const result = createJsonLdBuilder().mergeConfig(extendedConfig).build({ prettyPrint: false });
 
     const parsed = JSON.parse(result);
     expect(parsed['@graph']).toHaveLength(2);
@@ -100,7 +100,7 @@ describe('Integration: Merging Behavior with Builder', () => {
 
     const clearedConfig = baseConfig.clearTypes().includeTypes(['Person']).getConfig();
 
-    const result = createJsonLdBuilder().applyConfig(clearedConfig).build({ prettyPrint: false });
+    const result = createJsonLdBuilder().mergeConfig(clearedConfig).build({ prettyPrint: false });
 
     const parsed = JSON.parse(result);
     expect(parsed['@graph']).toHaveLength(1);
@@ -111,7 +111,7 @@ describe('Integration: Merging Behavior with Builder', () => {
     const config = createJsonLdConfig().baseGraph(testGraph).includeTypes(['Person']).getConfig();
 
     const result = createJsonLdBuilder()
-      .applyConfig(config)
+      .mergeConfig(config)
       .includeTypes(['Organization']) // Runtime merge
       .excludeIds(['article:1', 'image:1']) // Runtime exclude
       .build({ prettyPrint: false });

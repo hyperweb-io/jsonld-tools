@@ -35,7 +35,7 @@ describe('JsonLdConfigBuilder', () => {
       .filterPropertiesByIds(['org:hyperweb'], { exclude: ['member'] })
       .getConfig();
 
-    expect(config.propertyFiltersByIds).toMatchSnapshot();
+    expect(config.filters?.propertyFiltersByIds).toMatchSnapshot();
   });
 
   test('supports property filtering by types', () => {
@@ -43,7 +43,7 @@ describe('JsonLdConfigBuilder', () => {
       .filterPropertiesByTypes(['Article'], { include: ['headline', 'author'] })
       .getConfig();
 
-    expect(config.propertyFiltersByTypes).toMatchSnapshot();
+    expect(config.filters?.propertyFiltersByTypes).toMatchSnapshot();
   });
 
   test('supports chaining multiple configurations', () => {
@@ -61,13 +61,13 @@ describe('JsonLdConfigBuilder', () => {
     expect(config.filters?.excludeTypes).toEqual(['ImageObject']);
     expect(config.filters?.maxEntities).toBe(10);
     expect(config.filters?.requiredProperties).toEqual(['name']);
-    expect(config.propertyFiltersByIds).toHaveLength(1);
+    expect(config.filters?.propertyFiltersByIds).toHaveLength(1);
   });
 
   test('supports subgraph extraction configuration', () => {
     const config = createJsonLdConfig().baseGraph(graph).subgraph(['person:danlynch']).getConfig();
 
-    expect(config.subgraphRoots).toMatchSnapshot();
+    expect(config.filters?.subgraphRoots).toMatchSnapshot();
   });
 
   test('supports adding additional entities', () => {

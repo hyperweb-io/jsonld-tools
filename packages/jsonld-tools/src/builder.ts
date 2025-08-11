@@ -112,9 +112,9 @@ export class JsonLdBuilder extends JsonLdConfigBuilder {
     let propertyFiltersApplied = false;
 
     // Layer 1: Subgraph extraction with property filtering if subgraphRoots are set
-    if (config.subgraphRoots && config.subgraphRoots.length > 0) {
+    if (config.filters?.subgraphRoots && config.filters.subgraphRoots.length > 0) {
       // Extract subgraph with property filtering during traversal
-      graph = extractSubgraphs(graph, config.subgraphRoots, propertyFilters);
+      graph = extractSubgraphs(graph, config.filters.subgraphRoots, propertyFilters);
       propertyFiltersApplied = true; // Property filters were applied during subgraph extraction
     }
 

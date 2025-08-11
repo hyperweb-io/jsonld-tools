@@ -128,14 +128,14 @@ describe('Config Merging Behavior', () => {
         .clearPropertyFilters()
         .getConfig();
 
-      expect(config.propertyFiltersByIds).toBeUndefined();
-      expect(config.propertyFiltersByTypes).toBeUndefined();
+      expect(config.filters?.propertyFiltersByIds).toBeUndefined();
+      expect(config.filters?.propertyFiltersByTypes).toBeUndefined();
     });
 
     test('clearSubgraph clears subgraph roots', () => {
       const config = createJsonLdConfig().subgraph(['org:hyperweb']).clearSubgraph().getConfig();
 
-      expect(config.subgraphRoots).toBeUndefined();
+      expect(config.filters?.subgraphRoots).toBeUndefined();
     });
 
     test('clearAll clears everything except baseGraph', () => {

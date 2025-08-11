@@ -31,32 +31,6 @@ exports[`JsonLdBuilder adds additional entities with snapshot 1`] = `
 }"
 `;
 
-exports[`JsonLdBuilder applies configuration with snapshot 1`] = `
-"{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@id": "org:hyperweb",
-      "@type": "Organization",
-      "name": "HyperWeb",
-      "url": "https://hyperweb.com",
-      "member": [
-        {
-          "@id": "person:danlynch"
-        },
-        {
-          "@id": "person:john"
-        }
-      ],
-      "foundingDate": "2020-01-01",
-      "location": {
-        "@id": "place:san-francisco"
-      }
-    }
-  ]
-}"
-`;
-
 exports[`JsonLdBuilder applies custom pipes with snapshot 1`] = `
 "{
   "@context": "https://schema.org",
@@ -1352,6 +1326,32 @@ exports[`JsonLdBuilder limits max entities with snapshot 1`] = `
       ],
       "email": "john@example.com",
       "jobTitle": "Senior Developer"
+    }
+  ]
+}"
+`;
+
+exports[`JsonLdBuilder merges configuration with snapshot 1`] = `
+"{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@id": "org:hyperweb",
+      "@type": "Organization",
+      "name": "HyperWeb",
+      "url": "https://hyperweb.com",
+      "member": [
+        {
+          "@id": "person:danlynch"
+        },
+        {
+          "@id": "person:john"
+        }
+      ],
+      "foundingDate": "2020-01-01",
+      "location": {
+        "@id": "place:san-francisco"
+      }
     }
   ]
 }"

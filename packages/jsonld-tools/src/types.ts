@@ -210,6 +210,12 @@ export interface IJsonLdConfigBuilder {
   /** Clear entire configuration except baseGraph */
   clearAll(): this;
 
+  /** Merge with another configuration */
+  mergeConfig(config: JsonLdConfig): this;
+
+  /** Merge only the filters part of another configuration */
+  mergeFilters(filters: JsonLdFilterOptions): this;
+
   /** Get the current configuration */
   getConfig(): JsonLdConfig;
 }

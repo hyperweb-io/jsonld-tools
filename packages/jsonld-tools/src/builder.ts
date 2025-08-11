@@ -13,7 +13,6 @@ import {
   applyPopulateConfig,
   buildPropertyFilterConfig,
   filterJsonLdGraph,
-  mergeConfigs,
   validateRuntimeConfig,
 } from './builder-utils';
 
@@ -32,15 +31,6 @@ export class JsonLdBuilder extends JsonLdConfigBuilder {
    */
   protected createInstance(config: JsonLdConfig): JsonLdBuilder {
     return new JsonLdBuilder(config);
-  }
-
-  /**
-   * Apply a pre-built configuration (builder-specific method)
-   */
-  applyConfig(config: JsonLdConfig): JsonLdBuilder {
-    const currentConfig = this.getConfig();
-    const mergedConfig = mergeConfigs(currentConfig, config);
-    return new JsonLdBuilder(mergedConfig);
   }
 
   /**
@@ -98,7 +88,7 @@ export class JsonLdBuilder extends JsonLdConfigBuilder {
     const config = this.getConfig();
 
     if (!config.baseGraph) {
-      throw new Error('No base graph provided. Use baseGraph() or applyConfig() with a baseGraph.');
+      throw new Error('No base graph provided. Use baseGraph() or mergeConfig() with a baseGraph.');
     }
 
     // Validate configuration - only check for critical errors that would break processing

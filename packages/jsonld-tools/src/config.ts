@@ -11,12 +11,14 @@ import type {
   JsonLdConfig,
   JsonLdEntity,
   JsonLdFilter,
+  JsonLdFilterOptions,
   JsonLdGraph,
   PipeFunction,
   PopulateConfig,
   PropertyFilterByIdRule,
   PropertyFilterByTypeRule,
 } from './types';
+import { mergeConfigs, mergeFilterOptions } from './builder-utils';
 
 /**
  * Immutable configuration builder class
@@ -347,6 +349,30 @@ export class JsonLdConfigBuilder implements IJsonLdConfigBuilder {
   clearAll(): this {
     return this.createInstance({
       baseGraph: this.config.baseGraph,
+    }) as this;
+  }
+
+  /**
+   * Merge with another configuration
+   * @param config - Configuration to merge with current configuration
+   */
+  mergeConfig(config: JsonLdConfig): this {
+    const currentConfig = this.getConfig();
+    const mergedConfig = mergeConfigs(currentConfig, config);
+    return this.createInstance(mergedConfig) as this;
+  }
+
+  /**
+   * Merge only the filters part of another configuration
+   * @param filters - Filter options to merge with current filters
+   */
+  mergeFilters(filters: JsonLdFilterOptions): this {
+    const currentFilters = this.config.filters;
+    const mergedFilters = mergeFilterOptions(currentFilters, filters);
+
+    return this.createInstance({
+      ...this.config,
+      filters: mergedFilters,
     }) as this;
   }
 

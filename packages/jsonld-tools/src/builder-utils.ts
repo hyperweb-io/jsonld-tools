@@ -44,7 +44,7 @@ export function mergeConfigs(base: JsonLdConfig, override: JsonLdConfig): JsonLd
 /**
  * Merge filter options, merging arrays and using override for single values
  */
-function mergeFilterOptions(
+export function mergeFilterOptions(
   base?: JsonLdFilterOptions,
   override?: JsonLdFilterOptions
 ): JsonLdFilterOptions | undefined {

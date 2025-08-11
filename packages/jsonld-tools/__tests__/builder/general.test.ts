@@ -117,10 +117,10 @@ describe('JsonLdBuilder', () => {
     expect(() => builder.build()).toThrow('No base graph provided');
   });
 
-  test('applies configuration', () => {
+  test('merges configuration', () => {
     const config = createJsonLdConfig().baseGraph(graph).includeIds(['org:hyperweb']).getConfig();
 
-    const result = createJsonLdBuilder().applyConfig(config).build({ prettyPrint: false });
+    const result = createJsonLdBuilder().mergeConfig(config).build({ prettyPrint: false });
 
     const parsed = JSON.parse(result);
     expect(parsed['@context']).toBe('https://schema.org');
@@ -128,10 +128,10 @@ describe('JsonLdBuilder', () => {
     expect(parsed['@graph'][0]['@id']).toBe('org:hyperweb');
   });
 
-  test('applies configuration with snapshot', () => {
+  test('merges configuration with snapshot', () => {
     const config = createJsonLdConfig().baseGraph(graph).includeIds(['org:hyperweb']).getConfig();
 
-    const result = createJsonLdBuilder().applyConfig(config).build({ prettyPrint: true });
+    const result = createJsonLdBuilder().mergeConfig(config).build({ prettyPrint: true });
     expect(result).toMatchSnapshot();
   });
 
@@ -142,7 +142,7 @@ describe('JsonLdBuilder', () => {
       .getConfig();
 
     const result = createJsonLdBuilder()
-      .applyConfig(config)
+      .mergeConfig(config)
       .excludeIds(['person:john']) // Runtime override
       .build({ prettyPrint: false });
 
@@ -457,7 +457,7 @@ describe('JsonLdBuilder', () => {
     const extendedConfig = baseConfig.includeIds(['person:danlynch']).excludeTypes(['ImageObject']);
 
     const result = createJsonLdBuilder()
-      .applyConfig(extendedConfig.getConfig())
+      .mergeConfig(extendedConfig.getConfig())
       .build({ prettyPrint: true });
 
     expect(result).toMatchSnapshot();
@@ -472,7 +472,7 @@ describe('JsonLdBuilder', () => {
       .includeTypes(['Person'])
       .getConfig();
 
-    const result = createJsonLdBuilder().applyConfig(config).build({ prettyPrint: true });
+    const result = createJsonLdBuilder().mergeConfig(config).build({ prettyPrint: true });
 
     expect(result).toMatchSnapshot();
   });

@@ -4,7 +4,7 @@
  * Tests the new consistent merging behavior and clear methods
  */
 
-import { createJsonLdConfig } from '../../src';
+import { createJsonLdConfig, createJsonLdBuilder } from '../../src';
 
 describe('Config Merging Behavior', () => {
   describe('Default Merging', () => {
@@ -255,6 +255,283 @@ describe('Config Merging Behavior', () => {
         .getConfig();
 
       expect(config.filters?.includeIds).toEqual(['a']);
+    });
+  });
+
+  describe('Configuration Merging Methods', () => {
+    describe('mergeConfig', () => {
+      test('merges complete configurations', () => {
+        const baseConfig = createJsonLdConfig()
+          .includeTypes(['Person'])
+          .includeIds(['a', 'b'])
+          .addEntities([{ '@id': 'base', '@type': 'Thing' }]);
+
+        const otherConfig = createJsonLdConfig()
+          .includeTypes(['Organization'])
+          .excludeIds(['c', 'd'])
+          .addEntities([{ '@id': 'other', '@type': 'Thing' }])
+          .getConfig();
+
+        const merged = baseConfig.mergeConfig(otherConfig).getConfig();
+
+        expect(merged.filters?.includeTypes).toEqual(['Person', 'Organization']);
+        expect(merged.filters?.includeIds).toEqual(['a', 'b']);
+        expect(merged.filters?.excludeIds).toEqual(['c', 'd']);
+        expect(merged.additionalEntities).toEqual([
+          { '@id': 'base', '@type': 'Thing' },
+          { '@id': 'other', '@type': 'Thing' },
+        ]);
+      });
+
+      test('merges baseGraph with override precedence', () => {
+        const graph1 = [{ '@id': 'test1', '@type': 'Thing' }];
+        const graph2 = [{ '@id': 'test2', '@type': 'Thing' }];
+
+        const baseConfig = createJsonLdConfig().baseGraph(graph1);
+        const otherConfig = createJsonLdConfig().baseGraph(graph2).getConfig();
+
+        const merged = baseConfig.mergeConfig(otherConfig).getConfig();
+
+        expect(merged.baseGraph).toBe(graph2);
+      });
+
+      test('merges with empty configuration', () => {
+        const baseConfig = createJsonLdConfig().includeTypes(['Person']).includeIds(['a']);
+
+        const merged = baseConfig.mergeConfig({}).getConfig();
+
+        expect(merged.filters?.includeTypes).toEqual(['Person']);
+        expect(merged.filters?.includeIds).toEqual(['a']);
+      });
+
+      test('returns new instance', () => {
+        const baseConfig = createJsonLdConfig().includeTypes(['Person']);
+        const otherConfig = { filters: { includeTypes: ['Organization'] } };
+
+        const merged = baseConfig.mergeConfig(otherConfig);
+
+        expect(merged).not.toBe(baseConfig);
+        expect(baseConfig.getConfig().filters?.includeTypes).toEqual(['Person']);
+        expect(merged.getConfig().filters?.includeTypes).toEqual(['Person', 'Organization']);
+      });
+    });
+
+    describe('mergeFilters', () => {
+      test('merges filter options only', () => {
+        const baseConfig = createJsonLdConfig()
+          .includeTypes(['Person'])
+          .includeIds(['a', 'b'])
+          .addEntities([{ '@id': 'base', '@type': 'Thing' }]);
+
+        const otherFilters = {
+          includeTypes: ['Organization'],
+          excludeIds: ['c', 'd'],
+          maxEntities: 10,
+        };
+
+        const merged = baseConfig.mergeFilters(otherFilters).getConfig();
+
+        expect(merged.filters?.includeTypes).toEqual(['Person', 'Organization']);
+        expect(merged.filters?.includeIds).toEqual(['a', 'b']);
+        expect(merged.filters?.excludeIds).toEqual(['c', 'd']);
+        expect(merged.filters?.maxEntities).toBe(10);
+        expect(merged.additionalEntities).toEqual([{ '@id': 'base', '@type': 'Thing' }]);
+      });
+
+      test('merges with empty filters', () => {
+        const baseConfig = createJsonLdConfig().includeTypes(['Person']).includeIds(['a']);
+
+        const merged = baseConfig.mergeFilters({}).getConfig();
+
+        expect(merged.filters?.includeTypes).toEqual(['Person']);
+        expect(merged.filters?.includeIds).toEqual(['a']);
+      });
+
+      test('merges complex filter options', () => {
+        const baseConfig = createJsonLdConfig()
+          .includeTypes(['Person'])
+          .filterPropertiesByIds(['entity1'], { include: ['name'] })
+          .subgraph(['root1']);
+
+        const otherFilters = {
+          includeTypes: ['Organization'],
+          propertyFiltersByIds: [{ entityIds: ['entity2'], include: ['title'] }],
+          subgraphRoots: ['root2'],
+          customFilter: (entity: any) => entity['@type'] === 'Person',
+        };
+
+        const merged = baseConfig.mergeFilters(otherFilters).getConfig();
+
+        expect(merged.filters?.includeTypes).toEqual(['Person', 'Organization']);
+        expect(merged.filters?.subgraphRoots).toEqual(['root1', 'root2']);
+        expect(merged.filters?.propertyFiltersByIds).toHaveLength(2);
+        expect(merged.filters?.customFilter).toBe(otherFilters.customFilter);
+      });
+
+      test('returns new instance', () => {
+        const baseConfig = createJsonLdConfig().includeTypes(['Person']);
+        const otherFilters = { includeTypes: ['Organization'] };
+
+        const merged = baseConfig.mergeFilters(otherFilters);
+
+        expect(merged).not.toBe(baseConfig);
+        expect(baseConfig.getConfig().filters?.includeTypes).toEqual(['Person']);
+        expect(merged.getConfig().filters?.includeTypes).toEqual(['Person', 'Organization']);
+      });
+    });
+
+    describe('chaining with other methods', () => {
+      test('mergeConfig can be chained with other methods', () => {
+        const baseConfig = createJsonLdConfig().includeTypes(['Person']);
+        const otherConfig = { filters: { includeTypes: ['Organization'] } };
+
+        const result = baseConfig
+          .mergeConfig(otherConfig)
+          .excludeTypes(['ImageObject'])
+          .includeIds(['test'])
+          .getConfig();
+
+        expect(result.filters?.includeTypes).toEqual(['Person', 'Organization']);
+        expect(result.filters?.excludeTypes).toEqual(['ImageObject']);
+        expect(result.filters?.includeIds).toEqual(['test']);
+      });
+
+      test('mergeFilters can be chained with other methods', () => {
+        const baseConfig = createJsonLdConfig().includeTypes(['Person']);
+        const otherFilters = { includeTypes: ['Organization'] };
+
+        const result = baseConfig
+          .mergeFilters(otherFilters)
+          .excludeTypes(['ImageObject'])
+          .includeIds(['test'])
+          .getConfig();
+
+        expect(result.filters?.includeTypes).toEqual(['Person', 'Organization']);
+        expect(result.filters?.excludeTypes).toEqual(['ImageObject']);
+        expect(result.filters?.includeIds).toEqual(['test']);
+      });
+    });
+  });
+
+  describe('JsonLdBuilder Merge Methods', () => {
+    const testGraph = [
+      { '@id': 'person:1', '@type': 'Person', name: 'John' },
+      { '@id': 'org:1', '@type': 'Organization', name: 'Acme Corp' },
+      { '@id': 'image:1', '@type': 'ImageObject', url: 'test.jpg' },
+    ];
+
+    describe('mergeConfig in builder', () => {
+      test('merges configuration and processes graph', () => {
+        const config = createJsonLdConfig()
+          .baseGraph(testGraph)
+          .includeTypes(['Person'])
+          .getConfig();
+
+        const result = createJsonLdBuilder().mergeConfig(config).build({ prettyPrint: false });
+
+        const parsed = JSON.parse(result);
+        expect(parsed['@graph']).toHaveLength(1);
+        expect(parsed['@graph'][0]['@type']).toBe('Person');
+      });
+
+      test('merges configuration with runtime overrides', () => {
+        const config = createJsonLdConfig()
+          .baseGraph(testGraph)
+          .includeTypes(['Person', 'Organization'])
+          .getConfig();
+
+        const result = createJsonLdBuilder()
+          .mergeConfig(config)
+          .excludeTypes(['Organization']) // Runtime override
+          .build({ prettyPrint: false });
+
+        const parsed = JSON.parse(result);
+        expect(parsed['@graph']).toHaveLength(1);
+        expect(parsed['@graph'][0]['@type']).toBe('Person');
+      });
+
+      test('merges multiple configurations', () => {
+        const config1 = createJsonLdConfig()
+          .baseGraph(testGraph)
+          .includeTypes(['Person'])
+          .getConfig();
+
+        const config2 = createJsonLdConfig()
+          .includeTypes(['Organization'])
+          .excludeIds(['image:1'])
+          .getConfig();
+
+        const result = createJsonLdBuilder()
+          .mergeConfig(config1)
+          .mergeConfig(config2)
+          .build({ prettyPrint: false });
+
+        const parsed = JSON.parse(result);
+        expect(parsed['@graph']).toHaveLength(2);
+        const types = parsed['@graph'].map((e: any) => e['@type']);
+        expect(types).toContain('Person');
+        expect(types).toContain('Organization');
+      });
+    });
+
+    describe('mergeFilters in builder', () => {
+      test('merges filter options and processes graph', () => {
+        const builder = createJsonLdBuilder().baseGraph(testGraph).includeTypes(['Person']);
+
+        const filters = {
+          includeTypes: ['Organization'],
+          maxEntities: 1,
+        };
+
+        const result = builder.mergeFilters(filters).build({ prettyPrint: false });
+
+        const parsed = JSON.parse(result);
+        expect(parsed['@graph']).toHaveLength(1); // maxEntities limit
+        const types = parsed['@graph'].map((e: any) => e['@type']);
+        expect(['Person', 'Organization']).toContain(types[0]);
+      });
+
+      test('merges filters with runtime method calls', () => {
+        const builder = createJsonLdBuilder().baseGraph(testGraph).includeTypes(['Person']);
+
+        const filters = {
+          includeTypes: ['Organization'],
+        };
+
+        const result = builder
+          .mergeFilters(filters)
+          .excludeIds(['org:1']) // Runtime override
+          .build({ prettyPrint: false });
+
+        const parsed = JSON.parse(result);
+        expect(parsed['@graph']).toHaveLength(1);
+        expect(parsed['@graph'][0]['@type']).toBe('Person');
+      });
+    });
+
+    describe('chaining merge methods in builder', () => {
+      test('can chain mergeConfig and mergeFilters', () => {
+        const config = createJsonLdConfig()
+          .baseGraph(testGraph)
+          .includeTypes(['Person'])
+          .getConfig();
+
+        const filters = {
+          includeTypes: ['Organization'],
+        };
+
+        const result = createJsonLdBuilder()
+          .mergeConfig(config)
+          .mergeFilters(filters)
+          .excludeIds(['image:1']) // Runtime method
+          .build({ prettyPrint: false });
+
+        const parsed = JSON.parse(result);
+        expect(parsed['@graph']).toHaveLength(2);
+        const types = parsed['@graph'].map((e: any) => e['@type']);
+        expect(types).toContain('Person');
+        expect(types).toContain('Organization');
+      });
     });
   });
 });
